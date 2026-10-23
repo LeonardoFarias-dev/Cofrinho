@@ -1,3 +1,6 @@
+import os
+import socket
+
 from flask import Flask, render_template, request, redirect, url_for, flash, abort
 from database import conectar
 from criar_banco import criar_banco
@@ -5,6 +8,33 @@ from criar_banco import criar_banco
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "cofrinho-em-familia-chave-local"
 criar_banco()
+
+def obter_ip_local():
+    """Descobre o IP da máquina na rede local sem enviar pacotes de verdade."""
+    try:
+        with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
+            s.connect(("8.8.8.8", 80))
+            return s.getsockname()[0]
+    except OSError:
+        try:
+            return socket.gethostbyname(socket.gethostname())
+        except OSError:
+            return None
+
+def porta_disponivel(porta):
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        try:
+            s.bind(("0.0.0.0", porta))
+        except OSError:
+            return False
+    return True
+
+def escolher_porta(porta_preferida):
+    """Usa a porta pedida ou a próxima livre (a 5000 costuma ser usada pelo AirPlay no macOS)."""
+    for porta in range(porta_preferida, porta_preferida + 20):
+        if porta_disponivel(porta):
+            return porta
+    return porta_preferida
 
 def inteiro_positivo(valor, permitir_zero=False):
     try:
@@ -159,4 +189,19 @@ def nao_encontrado(_):
     return render_template("404.html"), 404
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    porta = escolher_porta(int(os.environ.get("PORT", 5000)))
+
+    # Evita imprimir o aviso duas vezes quando o modo debug reinicia o processo.
+    if os.environ.get("WERKZEUG_RUN_MAIN") != "true":
+        ip_local = obter_ip_local()
+        print()
+        print("Cofrinho em Família iniciado!")
+        print(f"  Neste computador: http://127.0.0.1:{porta}")
+        if ip_local:
+            print(f"  Na rede local:    http://{ip_local}:{porta}")
+        print("  Abra o endereço da rede local no celular (mesmo Wi-Fi).")
+        print("  Pressione Ctrl+C para encerrar.")
+        print()
+
+    # host="0.0.0.0" libera o acesso por outros dispositivos da rede.
+    app.run(host="0.0.0.0", port=porta, debug=True)
