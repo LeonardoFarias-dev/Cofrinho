@@ -32,22 +32,14 @@ Acesse `http://127.0.0.1:5001`.
 Ao iniciar, o terminal mostra os endereços:
 
 ```
-Neste computador: http://SEU_IP
-Na rede local:    http://SEU_IP_LOCAL:5001
+Neste computador: http://SEU_IP:
+Na rede local:    http://SEU_IP_LOCAL:
 ```
 
 No celular ou em outro dispositivo conectado ao mesmo Wi-Fi, abra o endereço da rede local.
 
 Para escolher outra porta: `PORT=8080 python app.py` (macOS/Linux) ou `set PORT=8080 && python app.py` (Windows).
 
-## Acessar pelo celular (mesma rede Wi-Fi)
-
-Ao iniciar, o terminal mostra dois endereços:
-
-```
-Neste computador: http://127.0.0.1:5001
-Na rede local:    http://10.131.130.223:5001
-```
 
 No celular ou em outro dispositivo conectado ao **mesmo Wi-Fi**, abra o endereço de **rede local**.
 
